@@ -1,3 +1,6 @@
+import json
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 
@@ -12,6 +15,12 @@ GROUPS: dict[str, list[str]] = {
         "mca-approved-engineer-course-2",
     ],
 }
+
+_config_path = os.path.join(os.path.dirname(__file__), "uksa-calendar.json")
+if os.path.exists(_config_path):
+    with open(_config_path) as _f:
+        _config = json.load(_f)
+    GROUPS.update(_config.get("groups", {}))
 
 VALID_COURSES = set(COURSE_NAMES.keys())
 
