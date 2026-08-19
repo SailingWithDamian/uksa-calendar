@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from icalendar import Calendar, Event
 
-from scraper import CourseEvent
+from models import CourseEvent
 
 
 def build_calendar(events: list[CourseEvent], calendar_name: str) -> bytes:
@@ -15,15 +15,14 @@ def build_calendar(events: list[CourseEvent], calendar_name: str) -> bytes:
     cal.add("x-wr-timezone", "Europe/London")
 
     for course_event in events:
+        summary = course_event.course_name
+        if course_event.status:
+            summary = f"[{course_event.status}] {summary}"
+        if course_event.location:
+            summary = f"[{course_event.location}] {summary}"
+
         event = Event()
-        event.add(
-            "summary",
-            (
-                f"[{course_event.status}] {course_event.course_name}"
-                if course_event.status
-                else course_event.course_name
-            ),
-        )
+        event.add("summary", summary)
         event.add("dtstart", course_event.start)
         event.add("dtend", course_event.end + timedelta(days=1))
         event.add(

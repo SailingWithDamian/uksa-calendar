@@ -1,12 +1,11 @@
 import asyncio
-from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import datetime
 
 import httpx
 from bs4 import BeautifulSoup
 
-_CACHE: dict[str, tuple[datetime, list["CourseEvent"]]] = {}
-_CACHE_TTL = timedelta(hours=24)
+from cache import CACHE, CACHE_TTL
+from models import CourseEvent
 
 COURSE_NAMES: dict[str, str] = {
     # STCW Safety Training
@@ -53,18 +52,9 @@ COURSE_NAMES: dict[str, str] = {
 }
 
 
-@dataclass
-class CourseEvent:
-    course_slug: str
-    course_name: str
-    start: date
-    end: date
-    status: str | None
-
-
 async def scrape_course_events(slug: str, client: httpx.AsyncClient) -> list[CourseEvent]:
-    cached_at, cached_events = _CACHE.get(slug, (None, None))
-    if cached_at and datetime.now() - cached_at < _CACHE_TTL:
+    cached_at, cached_events = CACHE.get(slug, (None, None))
+    if cached_at and datetime.now() - cached_at < CACHE_TTL:
         return cached_events
 
     course_name = COURSE_NAMES.get(slug, slug)
@@ -95,14 +85,18 @@ async def scrape_course_events(slug: str, client: httpx.AsyncClient) -> list[Cou
                 start=start,
                 end=end,
                 status=status,
+                location="UKSA",
             )
         )
 
-    _CACHE[slug] = (datetime.now(), events)
+    CACHE[slug] = (datetime.now(), events)
     return events
 
 
 async def fetch_events_for_courses(slugs: list[str]) -> list[CourseEvent]:
+    if not slugs:
+        return []
+
     async with httpx.AsyncClient() as client:
         results = await asyncio.gather(*[scrape_course_events(slug, client) for slug in slugs])
     # Preserve input order across the merged list.
