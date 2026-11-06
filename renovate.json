@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "group:allNonMajor"
+  ],
+  "automerge": true,
+  "automergeStrategy": "rebase",
+  "packageRules": [
+    {
+      "dependencyDashboardApproval": true,
+      "matchUpdateTypes": [
+        "major"
+      ]
+    },
+    {
+      "description": "Batch dev/test dependencies into a single weekly PR",
+      "matchManagers": ["poetry", "pep621"],
+      "matchDepTypes": ["test", "dev"],
+      "groupName": "dev dependencies",
+      "schedule": ["* * * * 1"]
+    }
+  ]
+}
