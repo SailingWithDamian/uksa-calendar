@@ -15,7 +15,7 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Build container
         uses: infrabits/ci-pack@bf407e73b2a7f1a223f072b7a2a2d6cc3028b70a # v2.6.0
